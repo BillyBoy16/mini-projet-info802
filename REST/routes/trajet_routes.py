@@ -94,7 +94,7 @@ def calculer_trajet_complet():
             if dist_depuis_derniere_recharge >= seuil_recharge:
                 
                 payload = {
-                    "lat": curr[1], # Attention à l'ordre [Lon, Lat] -> Lat
+                    "lat": curr[1],
                     "lon": curr[0],
                     "rayon": 20000
                 }

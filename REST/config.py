@@ -1,8 +1,9 @@
 import os
-class Config:
- SECRET_KEY = "admin123"
- SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
- SQLALCHEMY_TRACK_MODIFICATIONS = False
- JWT_SECRET_KEY = "jwtsecretkey"
+from dotenv import load_dotenv
 
- OPENROUTESERVICE_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjE2YzViMzljZmY2YjQxNTU4NGVkNzQ3ODAzNTJjOWFhIiwiaCI6Im11cm11cjY0In0="
+load_dotenv()
+
+class Config:
+    
+    # On récupère la clé dans le .env
+    OPENROUTESERVICE_KEY = os.getenv("OPENROUTESERVICE_KEY")

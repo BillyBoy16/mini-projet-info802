@@ -4,16 +4,11 @@ from typing import List, Optional
 from strawberry.scalars import JSON
 import os
 from dotenv import load_dotenv
-from pathlib import Path
 
-current_dir = Path(__file__).resolve().parent
-root_dir = current_dir.parent
-env_path = root_dir / ".env"
+load_dotenv()
 
-load_dotenv(dotenv_path=env_path)
 
 #Definition des types
-
 @strawberry.type
 class CarNaming:
     make: str

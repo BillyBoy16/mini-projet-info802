@@ -29,7 +29,6 @@ def trouver_borne_proche():
                 rec = json_data["records"][0]
                 fields = rec["fields"]
                 
-                # On formate une réponse propre standardisée
                 return jsonify({
                     "found": True,
                     "nom": fields.get("n_station", "Borne inconnue"),
