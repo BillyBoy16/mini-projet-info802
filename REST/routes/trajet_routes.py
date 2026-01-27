@@ -79,6 +79,9 @@ def calculer_trajet_complet():
 
         api_bornes_url = "http://127.0.0.1:5000/api/borne-proche"
 
+        #km du dernier échec de recherche de borne
+        km_dernier_echec = -1
+
         # On parcourt point par point
         for i in range(1, len(path_coords)):
             prev = path_coords[i-1]
@@ -91,7 +94,7 @@ def calculer_trajet_complet():
             dist_depuis_derniere_recharge += segment_dist
 
             # Si on dépasse le seuil, il faut recharger ICI
-            if dist_depuis_derniere_recharge >= seuil_recharge:
+            if dist_depuis_derniere_recharge >= seuil_recharge and (dist_cumulee - km_dernier_echec > 10):
                 
                 payload = {
                     "lat": curr[1],
@@ -119,9 +122,11 @@ def calculer_trajet_complet():
                             
                             # On a rechargé, on reset le compteur
                             dist_depuis_derniere_recharge = 0
+                            km_dernier_echec = -1
                             print(f"   [REST] Borne trouvée : {data_borne['nom']}")
                         else:
                             print("   [REST] Pas de borne dans la zone")
+                            km_dernier_echec = dist_cumulee
                     else:
                         print(f"   [REST] Erreur service : {resp_service.status_code}")
 

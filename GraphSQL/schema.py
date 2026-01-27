@@ -88,8 +88,6 @@ class Query:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(url, json={"query": query}, headers=headers)
-                print(f"Status Code : {response.status_code}")
-                print(f"Réponse Texte : {response.text[:500]}")
                 if response.status_code != 200:
                     return []
 
