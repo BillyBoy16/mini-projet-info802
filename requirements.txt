@@ -1,0 +1,22 @@
+# --- Framework Web & API ---
+flask
+flask-cors
+flask-sqlalchemy
+flask-jwt-extended
+
+# --- Réseau & Requêtes HTTP ---
+requests
+
+# --- GPS & Cartographie ---
+openrouteservice
+
+# --- SOAP (Serveur & Client) ---
+spyne
+zeep
+lxml
+
+# --- Serveur de Production (Pour Heroku/Azure) ---
+gunicorn
+
+# --- Utilitaires ---
+python-dotenv
