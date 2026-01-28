@@ -120,7 +120,7 @@ def calculer_trajet_complet():
             print(f" Recalcul de l'itinéraire passant par {len(bornes_trouvees)} bornes...")
             
             # waypoints => coordonnées des étapes
-            # Départ -> Borne 1 -> Borne 2 -> Arrivée
+            # Départ -> Borne 1 -> Borne n -> Arrivée
             waypoints = [start_coords]
             
             for b in bornes_trouvees:
