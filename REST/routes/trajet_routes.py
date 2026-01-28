@@ -48,23 +48,6 @@ def calculer_trajet_complet():
         summary = feature['properties']['summary']
         distance_totale_km = int(summary['distance'] / 1000)
 
-        # 3. Appel SOAP (Calcul Prix/Temps)
-        try:
-            soap_client = Client('http://127.0.0.1:8000/?wsdl')
-            temps_estime = soap_client.service.calcul_temps_trajet(
-                distance=distance_totale_km, 
-                autonomie=autonomie, 
-                temps_chargement=0.5
-            )
-            prix_estime = soap_client.service.calcul_prix_trajet(
-                distance=distance_totale_km, 
-                autonomie=autonomie
-            )
-        except Exception as e:
-            temps_estime = "Erreur SOAP"
-            prix_estime = "N/A"
-            print(f"Erreur SOAP: {e}")
-
         # Recherche des bornes
         bornes_trouvees = []
         path_coords = geometry['coordinates'] #liste de coordonnées
@@ -133,6 +116,60 @@ def calculer_trajet_complet():
                 except Exception as e:
                     print(f"   [REST] Exception connexion service : {e}")
 
+        if len(bornes_trouvees) > 0:
+            print(f" Recalcul de l'itinéraire passant par {len(bornes_trouvees)} bornes...")
+            
+            # waypoints => coordonnées des étapes
+            # Départ -> Borne 1 -> Borne 2 -> Arrivée
+            waypoints = [start_coords]
+            
+            for b in bornes_trouvees:
+                # IMPORTANT : ORS veut [Lon, Lat] donc on inverse ici
+                waypoints.append([b['coords'][1], b['coords'][0]])
+            
+            waypoints.append(end_coords)
+
+            try:
+                # On rappelle OpenRouteService avec les étapes
+                new_routes = ors_client.directions(
+                    coordinates=waypoints,
+                    profile='driving-car',
+                    format='geojson'
+                )
+                
+                # On met à jour les données du trajet avec le nouveau tracé
+                feature = new_routes['features'][0]
+                geometry = feature['geometry'] #nouveau tracé
+                summary = feature['properties']['summary']
+                
+                # On met à jour la distance totale car le détour rajoute des km
+                distance_totale_km = int(summary['distance'] / 1000)
+                
+                # On met à jour la "bbox" pour que le zoom s'adapte au détour
+                routes['bbox'] = new_routes['bbox']
+                
+                print(" Itinéraire recalculé avec succès.")
+
+            except Exception as e:
+                print(f" Erreur lors du recalcul de l'itinéraire : {e}")
+
+        # 3. Appel SOAP (Calcul Prix/Temps)
+        try:
+            soap_client = Client('http://127.0.0.1:8000/?wsdl')
+            temps_estime = soap_client.service.calcul_temps_trajet(
+                distance=distance_totale_km, 
+                autonomie=autonomie, 
+                temps_chargement=0.5
+            )
+            prix_estime = soap_client.service.calcul_prix_trajet(
+                distance=distance_totale_km, 
+                autonomie=autonomie
+            )
+        except Exception as e:
+            temps_estime = "Erreur SOAP"
+            prix_estime = "N/A"
+            print(f"Erreur SOAP: {e}")
+        
         # Retour au front
         return jsonify({
             "geometry": geometry,
