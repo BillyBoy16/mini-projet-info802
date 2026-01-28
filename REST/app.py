@@ -14,6 +14,8 @@ def create_app():
  app.register_blueprint(trajet_bp, url_prefix="/api")
  from routes.borne_routes import borne_bp
  app.register_blueprint(borne_bp, url_prefix="/api")
+ from routes.voiture_routes import voiture_bp
+ app.register_blueprint(voiture_bp, url_prefix="/api")
  return app
 
 app = create_app()

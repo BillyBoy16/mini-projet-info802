@@ -45,13 +45,9 @@ async function loadCarsFromGraphQL() {
     const select = document.getElementById("carSelect");
 
     try {
-        // Appel à API FastAPI (Port 8001)
-        const response = await fetch('http://127.0.0.1:8001/graphql', {
-            method: 'POST',
+        const response = await fetch('http://127.0.0.1:5000/api/voiture', {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: "{ getCarsJson }"
-            })
         });
 
         const result = await response.json();
