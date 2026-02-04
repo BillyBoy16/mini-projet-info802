@@ -1,0 +1,6 @@
+fastapi
+strawberry-graphql
+uvicorn[standard]
+gunicorn
+python-dotenv
+httpx   

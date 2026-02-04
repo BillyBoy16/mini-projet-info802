@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 import openrouteservice
 from zeep import Client
 import requests
+import os
 from math import radians, cos, sin, asin, sqrt
 
 trajet_bp = Blueprint('trajet', __name__)
@@ -60,7 +61,7 @@ def calculer_trajet_complet():
 
         # URL de VOTRE propre service REST de bornes
 
-        api_bornes_url = "http://127.0.0.1:5000/api/borne-proche"
+        api_bornes_url = os.getenv("BORNE_API_URL", "http://127.0.0.1:5000/api/borne-proche")
 
         #km du dernier échec de recherche de borne
         km_dernier_echec = -1
@@ -155,7 +156,8 @@ def calculer_trajet_complet():
 
         # 3. Appel SOAP (Calcul Prix/Temps)
         try:
-            soap_client = Client('http://127.0.0.1:8000/?wsdl')
+            soap_url = os.getenv("SOAP_URL", "http://127.0.0.1:8000/?wsdl")
+            soap_client = Client(soap_url)
             temps_estime = soap_client.service.calcul_temps_trajet(
                 distance=distance_totale_km, 
                 autonomie=autonomie, 

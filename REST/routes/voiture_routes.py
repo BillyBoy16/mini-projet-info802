@@ -6,7 +6,7 @@ voiture_bp = Blueprint('voiture', __name__)
 
 @voiture_bp.get("/voiture")
 def get_voitures():
-    graphql_url = "http://127.0.0.1:8001/graphql"
+    graphql_url = os.getenv("GRAPHQL_SERVICE_URL", "http://127.0.0.1:8001/graphql")
 
     # 2. Définition de la requête GraphQL (La même que dans le Playground)
     query = """

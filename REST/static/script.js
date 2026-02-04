@@ -45,7 +45,7 @@ async function loadCarsFromGraphQL() {
     const select = document.getElementById("carSelect");
 
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/voiture', {
+        const response = await fetch('/api/voiture', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
@@ -152,7 +152,7 @@ async function lancerTraitement() {
         const autonomieVal = document.getElementById("autonomie").value;
 
         // Appel à l'API REST (Port 5000)
-        const response = await fetch('http://127.0.0.1:5000/api/trajet-complet', {
+        const response = await fetch('/api/trajet-complet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
