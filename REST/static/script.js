@@ -182,7 +182,7 @@ async function lancerTraitement() {
 
         // 3. Les bornes
         data.bornes.forEach(borne => {
-            L.marker(borne.coords).addTo(stationMarkers)
+            L.marker([borne.coords[1], borne.coords[0]]).addTo(stationMarkers)
             .bindPopup(`<b>Recharge nécessaire</b><br>${borne.nom}<br>${borne.dist_trajet}`);
         });
 

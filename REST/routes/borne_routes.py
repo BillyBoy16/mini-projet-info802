@@ -18,7 +18,7 @@ def trouver_borne_proche():
     params = {
         "dataset": "bornes-irve",
         "rows": 1,
-        "geofilter.distance": f"{lat},{lon},{rayon}"
+        "geofilter.distance": f"{lon},{lat},{rayon}"
     }
 
     try:
@@ -31,9 +31,9 @@ def trouver_borne_proche():
                 
                 return jsonify({
                     "found": True,
-                    "nom": fields.get("n_station", "Borne inconnue"),
-                    "adresse": fields.get("ad_station", "Adresse N/A"),
-                    "puissance": f"{fields.get('puiss_max', '?')} kW",
+                    "nom": fields.get("nom_station", "Borne inconnue"),
+                    "adresse": fields.get("adresse_station", "Adresse N/A"),
+                    "puissance": f"{fields.get('puissance_nominale', '?')} kW",
                     # Format standard GeoJSON pour l'API : [Lon, Lat]
                     "coords": [rec["geometry"]["coordinates"][0], rec["geometry"]["coordinates"][1]]
                 }), 200

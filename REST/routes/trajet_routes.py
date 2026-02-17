@@ -125,8 +125,7 @@ def calculer_trajet_complet():
             waypoints = [start_coords]
             
             for b in bornes_trouvees:
-                # IMPORTANT : ORS veut [Lon, Lat] donc on inverse ici
-                waypoints.append([b['coords'][1], b['coords'][0]])
+                waypoints.append([b['coords'][0], b['coords'][1]])
             
             waypoints.append(end_coords)
 
