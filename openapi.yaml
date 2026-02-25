@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: API de Gestion de Flotte (Trajets, Bornes, Voitures)
+  description: Documentation de l'API REST.
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: Serveur principal
+
+tags:
+  - name: Trajets
+    description: Gestion des trajets
+  - name: Bornes
+    description: Gestion des bornes de recharge
+  - name: Voitures
+    description: Gestion des véhicules
+
+paths:
+  /trajet:
+    get:
+      tags:
+        - Trajets
+      summary: Récupérer la liste des trajets
+      responses:
+        '200':
+          description: Liste des trajets récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trajet'
+    post:
+      tags:
+        - Trajets
+      summary: Créer un nouveau trajet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trajet'
+      responses:
+        '201':
+          description: Trajet créé avec succès
+
+  /borne:
+    get:
+      tags:
+        - Bornes
+      summary: Récupérer la liste des bornes
+      responses:
+        '200':
+          description: Liste des bornes récupérée avec succès
+    post:
+      tags:
+        - Bornes
+      summary: Ajouter une nouvelle borne
+      responses:
+        '201':
+          description: Borne ajoutée avec succès
+
+  /voiture:
+    get:
+      tags:
+        - Voitures
+      summary: Récupérer la liste des voitures
+      responses:
+        '200':
+          description: Liste des voitures récupérée avec succès
+    post:
+      tags:
+        - Voitures
+      summary: Ajouter une nouvelle voiture
+      responses:
+        '201':
+          description: Voiture ajoutée avec succès
+
+# Définition de la structure de tes objets (Modèles)
+components:
+  schemas:
+    Trajet:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        depart:
+          type: string
+          example: "Paris"
+        arrivee:
+          type: string
+          example: "Lyon"
+        distance_km:
+          type: number
+          example: 460.5
