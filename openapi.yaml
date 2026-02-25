@@ -94,4 +94,4 @@ components:
           example: "Lyon"
         distance_km:
           type: number
-          example: 460.5
+          example: 460.5  
