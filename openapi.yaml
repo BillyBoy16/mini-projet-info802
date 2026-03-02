@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: API de Gestion de Flotte (Trajets, Bornes, Voitures)
-  description: Documentation de l'API REST.
+  description: Documentation de l'API REST du mini-projet info802. Orchestration de services (OpenRouteService, OpenDataSoft, SOAP, GraphQL).
   version: 1.0.0
 
 servers:
@@ -10,88 +10,183 @@ servers:
 
 tags:
   - name: Trajets
-    description: Gestion des trajets
+    description: Calcul d'itinéraires et orchestration
   - name: Bornes
-    description: Gestion des bornes de recharge
+    description: Recherche de bornes IRVE (via OpenDataSoft)
   - name: Voitures
-    description: Gestion des véhicules
+    description: Gestion des véhicules (via GraphQL)
 
 paths:
-  /trajet:
-    get:
-      tags:
-        - Trajets
-      summary: Récupérer la liste des trajets
-      responses:
-        '200':
-          description: Liste des trajets récupérée avec succès
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Trajet'
+  /trajet-complet:
     post:
       tags:
         - Trajets
-      summary: Créer un nouveau trajet
+      summary: Calculer un trajet complet avec gestion des recharges
+      description: Calcule un itinéraire via OpenRouteService, interroge l'API des bornes si l'autonomie est insuffisante, recalcule l'itinéraire et estime le coût/temps via un service SOAP.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Trajet'
-      responses:
-        '201':
-          description: Trajet créé avec succès
-
-  /borne:
-    get:
-      tags:
-        - Bornes
-      summary: Récupérer la liste des bornes
+              $ref: '#/components/schemas/TrajetRequest'
       responses:
         '200':
-          description: Liste des bornes récupérée avec succès
+          description: Itinéraire calculé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrajetResponse'
+        '500':
+          description: Erreur interne du serveur (Erreur de calcul ou de connexion)
+
+  /borne-proche:
     post:
       tags:
         - Bornes
-      summary: Ajouter une nouvelle borne
+      summary: Trouver la borne la plus proche d'un point
+      description: Cherche une borne de recharge dans un rayon donné autour de coordonnées GPS via l'API OpenDataSoft.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorneRequest'
       responses:
-        '201':
-          description: Borne ajoutée avec succès
+        '200':
+          description: Résultat de la recherche (Borne trouvée ou non)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BorneResponse'
+        '400':
+          description: Coordonnées manquantes dans la requête
+        '502':
+          description: Erreur de communication avec OpenDataSoft
+        '500':
+          description: Erreur interne
 
   /voiture:
     get:
       tags:
         - Voitures
       summary: Récupérer la liste des voitures
+      description: Fait un appel à un service GraphQL interne pour récupérer les données des voitures.
       responses:
         '200':
           description: Liste des voitures récupérée avec succès
-    post:
-      tags:
-        - Voitures
-      summary: Ajouter une nouvelle voiture
-      responses:
-        '201':
-          description: Voiture ajoutée avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Réponse brute du service GraphQL
+        '502':
+          description: Erreur de l'API GraphQL
+        '503':
+          description: Service GraphQL indisponible
 
-# Définition de la structure de tes objets (Modèles)
 components:
   schemas:
-    Trajet:
+    TrajetRequest:
+      type: object
+      required:
+        - start_coords
+        - end_coords
+      properties:
+        start_coords:
+          type: array
+          items:
+            type: number
+          example: [2.3522, 48.8566]
+          description: "[Longitude, Latitude] de départ"
+        end_coords:
+          type: array
+          items:
+            type: number
+          example: [4.8357, 45.7640]
+          description: "[Longitude, Latitude] d'arrivée"
+        autonomie:
+          type: integer
+          example: 300
+          description: "Autonomie du véhicule en kilomètres (Défaut: 300)"
+
+    TrajetResponse:
       type: object
       properties:
-        id:
-          type: integer
-          example: 1
-        depart:
-          type: string
-          example: "Paris"
-        arrivee:
-          type: string
-          example: "Lyon"
-        distance_km:
+        geometry:
+          type: object
+          description: Objet GeoJSON contenant le tracé
+        bbox:
+          type: array
+          items:
+            type: number
+          description: Bounding box pour centrer la carte
+        infos:
+          type: object
+          properties:
+            distance:
+              type: string
+              example: "460 km"
+            duree_avec_charge:
+              type: string
+              example: "05:30:00"
+            cout_estime:
+              type: string
+              example: "45.50 €"
+        bornes:
+          type: array
+          items:
+            type: object
+            properties:
+              nom:
+                type: string
+              coords:
+                type: array
+                items:
+                  type: number
+              dist_trajet:
+                type: string
+              adresse:
+                type: string
+              puissance:
+                type: string
+
+    BorneRequest:
+      type: object
+      required:
+        - lat
+        - lon
+      properties:
+        lat:
           type: number
-          example: 460.5  
+          example: 48.8566
+        lon:
+          type: number
+          example: 2.3522
+        rayon:
+          type: integer
+          example: 5000
+          description: Rayon de recherche en mètres
+
+    BorneResponse:
+      type: object
+      properties:
+        found:
+          type: boolean
+          example: true
+        nom:
+          type: string
+          example: "Station de recharge Ionity"
+        adresse:
+          type: string
+          example: "Aire de l'autoroute A6"
+        puissance:
+          type: string
+          example: "350 kW"
+        coords:
+          type: array
+          items:
+            type: number
+          example: [2.3522, 48.8566]
+        msg:
+          type: string
+          description: Message explicatif si aucune borne n'est trouvée
