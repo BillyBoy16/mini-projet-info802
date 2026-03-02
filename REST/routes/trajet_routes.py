@@ -159,12 +159,11 @@ def calculer_trajet_complet():
             soap_client = Client(soap_url)
             temps_estime = soap_client.service.calcul_temps_trajet(
                 distance=distance_totale_km, 
-                autonomie=autonomie, 
-                temps_chargement=0.5
+                temps_chargement=0.5,
+                nb_arrets=len(bornes_trouvees)
             )
             prix_estime = soap_client.service.calcul_prix_trajet(
-                distance=distance_totale_km, 
-                autonomie=autonomie
+                nb_arrets=len(bornes_trouvees)
             )
         except Exception as e:
             temps_estime = "Erreur SOAP"
