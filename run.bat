@@ -6,7 +6,7 @@ echo ==========================================
 :: 1. Lancer le serveur GraphQL (Port 8001)
 :: "cd GraphSQL" entre dans le dossier
 :: "&&" permet d'enchainer la commande suivante
-:: "cmd /k" garde la fenetre ouverte en cas d'erreur
+:: "cmd /k" garde la fenetre ouverte
 echo Lancement du serveur GraphQL...
 start "Serveur GraphQL (Port 8001)" cmd /k "cd GraphSQL && python main.py"
 
@@ -14,7 +14,7 @@ start "Serveur GraphQL (Port 8001)" cmd /k "cd GraphSQL && python main.py"
 echo Lancement du serveur REST...
 start "Serveur REST (Port 5000)" cmd /k "cd REST && python app.py"
 
-:: 3. Lancer le serveur SOAP
+:: 3. Lancer le serveur SOAP (Port 8000)
 echo Lancement du serveur SOAP...
 start "Serveur SOAP (Port 8000)" cmd /k "cd soap && python soap.py"
 

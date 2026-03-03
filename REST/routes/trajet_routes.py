@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 import openrouteservice
 from zeep import Client
 import requests
+import os
 from math import radians, cos, sin, asin, sqrt
 
 trajet_bp = Blueprint('trajet', __name__)
@@ -48,23 +49,6 @@ def calculer_trajet_complet():
         summary = feature['properties']['summary']
         distance_totale_km = int(summary['distance'] / 1000)
 
-        # 3. Appel SOAP (Calcul Prix/Temps)
-        try:
-            soap_client = Client('http://127.0.0.1:8000/?wsdl')
-            temps_estime = soap_client.service.calcul_temps_trajet(
-                distance=distance_totale_km, 
-                autonomie=autonomie, 
-                temps_chargement=0.5
-            )
-            prix_estime = soap_client.service.calcul_prix_trajet(
-                distance=distance_totale_km, 
-                autonomie=autonomie
-            )
-        except Exception as e:
-            temps_estime = "Erreur SOAP"
-            prix_estime = "N/A"
-            print(f"Erreur SOAP: {e}")
-
         # Recherche des bornes
         bornes_trouvees = []
         path_coords = geometry['coordinates'] #liste de coordonnées
@@ -77,7 +61,10 @@ def calculer_trajet_complet():
 
         # URL de VOTRE propre service REST de bornes
 
-        api_bornes_url = "http://127.0.0.1:5000/api/borne-proche"
+        api_bornes_url = os.getenv("BORNE_API_URL", "http://127.0.0.1:5000/api/borne-proche")
+
+        #km du dernier échec de recherche de borne
+        km_dernier_echec = -1
 
         # On parcourt point par point
         for i in range(1, len(path_coords)):
@@ -91,7 +78,7 @@ def calculer_trajet_complet():
             dist_depuis_derniere_recharge += segment_dist
 
             # Si on dépasse le seuil, il faut recharger ICI
-            if dist_depuis_derniere_recharge >= seuil_recharge:
+            if dist_depuis_derniere_recharge >= seuil_recharge and (dist_cumulee - km_dernier_echec > 10):
                 
                 payload = {
                     "lat": curr[1],
@@ -119,15 +106,70 @@ def calculer_trajet_complet():
                             
                             # On a rechargé, on reset le compteur
                             dist_depuis_derniere_recharge = 0
+                            km_dernier_echec = -1
                             print(f"   [REST] Borne trouvée : {data_borne['nom']}")
                         else:
                             print("   [REST] Pas de borne dans la zone")
+                            km_dernier_echec = dist_cumulee
                     else:
                         print(f"   [REST] Erreur service : {resp_service.status_code}")
 
                 except Exception as e:
                     print(f"   [REST] Exception connexion service : {e}")
 
+        if len(bornes_trouvees) > 0:
+            print(f" Recalcul de l'itinéraire passant par {len(bornes_trouvees)} bornes...")
+            
+            # waypoints => coordonnées des étapes
+            # Départ -> Borne 1 -> Borne n -> Arrivée
+            waypoints = [start_coords]
+            
+            for b in bornes_trouvees:
+                waypoints.append([b['coords'][0], b['coords'][1]])
+            
+            waypoints.append(end_coords)
+
+            try:
+                # On rappelle OpenRouteService avec les étapes
+                new_routes = ors_client.directions(
+                    coordinates=waypoints,
+                    profile='driving-car',
+                    format='geojson'
+                )
+                
+                # On met à jour les données du trajet avec le nouveau tracé
+                feature = new_routes['features'][0]
+                geometry = feature['geometry'] #nouveau tracé
+                summary = feature['properties']['summary']
+                
+                # On met à jour la distance totale car le détour rajoute des km
+                distance_totale_km = int(summary['distance'] / 1000)
+                
+                # On met à jour la "bbox" pour que le zoom s'adapte au détour
+                routes['bbox'] = new_routes['bbox']
+                
+                print(" Itinéraire recalculé avec succès.")
+
+            except Exception as e:
+                print(f" Erreur lors du recalcul de l'itinéraire : {e}")
+
+        # 3. Appel SOAP (Calcul Prix/Temps)
+        try:
+            soap_url = os.getenv("SOAP_URL", "http://127.0.0.1:8000/?wsdl")
+            soap_client = Client(soap_url)
+            temps_estime = soap_client.service.calcul_temps_trajet(
+                distance=distance_totale_km, 
+                temps_chargement=0.5,
+                nb_arrets=len(bornes_trouvees)
+            )
+            prix_estime = soap_client.service.calcul_prix_trajet(
+                nb_arrets=len(bornes_trouvees)
+            )
+        except Exception as e:
+            temps_estime = "Erreur SOAP"
+            prix_estime = "N/A"
+            print(f"Erreur SOAP: {e}")
+        
         # Retour au front
         return jsonify({
             "geometry": geometry,

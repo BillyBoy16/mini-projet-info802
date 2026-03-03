@@ -1,0 +1,5 @@
+spyne
+lxml
+zeep
+gunicorn
+werkzeug

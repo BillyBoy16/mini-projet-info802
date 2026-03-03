@@ -1,47 +1,42 @@
 from spyne.application import Application
 from spyne.service import ServiceBase
-from spyne import rpc, Unicode, Integer, Iterable
+from spyne import rpc, Unicode, Integer, Iterable, Float
 from spyne.server.wsgi import WsgiApplication
 from spyne.protocol.soap import Soap11
 
 class DistanceService(ServiceBase):
-    @rpc(Integer, Integer, float, _returns=Unicode)
-    def calcul_temps_trajet(ctx, distance, autonomie, temps_chargement):
+    @rpc(Integer, Float, Integer, _returns=Unicode)
+    def calcul_temps_trajet(ctx, distance, temps_chargement, nb_arrets):
+        """
+        Calcule le temps total du trajet.
+        distance : distance totale du trajet en km
+        temps_chargement : temps de chargement par arrêt en heures
+        nb_arrets : nombre d'arrêts de recharge
+        """
         
-        if distance <= 0 or autonomie <= 0 or temps_chargement < 0:
+        if distance <= 0 or temps_chargement < 0:
             return "paramètres invalides"
 
         vitesse_moy = 83.0  # km/h
-
-        # Nombre d'arrêts de recharge (pas de recharge au départ ni à l'arrivée)
-        nb_arrets = max(0, (distance - 1) // autonomie)
 
         temps_total_heures = (distance / vitesse_moy) + (nb_arrets * temps_chargement)
 
         heures = int(temps_total_heures)
         minutes = int(round((temps_total_heures - heures) * 60))
 
-        # Gestion du cas 1h60min
         if minutes == 60:
             heures += 1
             minutes = 0
 
         return f"{heures}h{minutes:02d}min"
 
-    @rpc(Integer, Integer, _returns=Unicode)
-    def calcul_prix_trajet(ctx, distance, autonomie):
+    @rpc(Integer, _returns=Unicode)
+    def calcul_prix_trajet(ctx,  nb_arrets):
         """
         Calcule le prix total du trajet.
-
-        distance : distance totale en km
-        autonomie : autonomie du véhicule en km
+        nb_arrets : nombre d'arrêts de recharge
         """
-        if distance <= 0 or autonomie <= 0:
-            return "paramètres invalides"
 
-
-        # Nombre d'arrêts de recharge (pas de recharge au départ ni à l'arrivée)
-        nb_arrets = max(0, (distance - 1) // autonomie)
         prix = 10  # euros par recharge
 
 

@@ -45,13 +45,9 @@ async function loadCarsFromGraphQL() {
     const select = document.getElementById("carSelect");
 
     try {
-        // Appel à API FastAPI (Port 8001)
-        const response = await fetch('http://127.0.0.1:8001/graphql', {
-            method: 'POST',
+        const response = await fetch('/api/voiture', {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: "{ getCarsJson }"
-            })
         });
 
         const result = await response.json();
@@ -156,7 +152,7 @@ async function lancerTraitement() {
         const autonomieVal = document.getElementById("autonomie").value;
 
         // Appel à l'API REST (Port 5000)
-        const response = await fetch('http://127.0.0.1:5000/api/trajet-complet', {
+        const response = await fetch('/api/trajet-complet', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -186,7 +182,7 @@ async function lancerTraitement() {
 
         // 3. Les bornes
         data.bornes.forEach(borne => {
-            L.marker(borne.coords).addTo(stationMarkers)
+            L.marker([borne.coords[1], borne.coords[0]]).addTo(stationMarkers)
             .bindPopup(`<b>Recharge nécessaire</b><br>${borne.nom}<br>${borne.dist_trajet}`);
         });
 
