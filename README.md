@@ -27,6 +27,4 @@ L'ensemble des microservices est actuellement déployé et hébergé sur le clou
 Pour fournir des données précises, ce projet s'appuie sur les API externes suivantes :
 * **OpenRouteService** : Génération des tracés GPS et calcul des distances.
 * **ChargeTrip** : Récupère les voitures électriques et leurs caractéristiques.
-* **OpenDataSoft** : Recherche géolocalisée des bornes de recharge IRVE.Pour fournir des données précises, ce projet s'appuie sur les API externes suivantes :
-* **OpenRouteService** : Génération des tracés GPS et calcul des distances.
 * **OpenDataSoft** : Recherche géolocalisée des bornes de recharge IRVE.
