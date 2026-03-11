@@ -4,7 +4,7 @@ Bienvenue sur le dépôt du projet **INFO802**. Ce projet met en place une archi
 
 ## Documentation Interactive
 
-La documentation complète de l'API REST a été rédigée au standard OpenAPI. Tu peux la consulter et la tester de manière interactive via Swagger :
+La documentation complète de l'API REST a été rédigée au standard OpenAPI :
 
 [![Swagger](https://img.shields.io/badge/Swagger-Voir_la_doc-85EA2D?logo=swagger&logoColor=black)](https://editor.swagger.io/?url=https://raw.githubusercontent.com/BillyBoy16/mini-projet-info802/develop/openapi.yaml)
 
